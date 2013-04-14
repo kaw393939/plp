@@ -1,70 +1,70 @@
-EVENT-DRIVEN PROGRAMMING WITH NODE.JS AND REDIS
-===============================================
+ipident - IP identification lookup using redis
+==============================================
 
-T. Budiman
+This module provides a simple Node.js API interface to identify city information from a given IP Address.
+The module will setup a redis data store and load the IP lookup data there.
 
-tbudiman@gmail.com
-
-@tbudiman
-
-
-Bala
-
-Prerequisite
+Installation
 ------------
 
-In order to follow this tutorial, the reader should read Introduction to Node.js and Introduction to Redis.
-This tutorial, the source code and sample data are available at [IPtoCountry-Mapping] 
+You have to install redis and node.js in order to use this module.
 
-IP Identification
------------------
-
-In this tutorial we will write several application involving IP identification. We have a csv file containing the IP ranges for all cities in the world, with a few information about that city. The objective is to create a IP lookup, where the application should identify the city from a given IP Address. We'll create a simple web application which will identify the IP address of the request and then display the city information. In order to achieve this in a very fast way, we'll use redis as our database of IP addresses. Since this is a fairly simple and straightforward application, we'll also try to do this using the Test-Driven Development methodology, which requires us to create the unit tests first.
-
-
-Installing node.js modules
---------------------------
-
-We need several node.js modules to complete this tutorial. First, we'll create
-a directory and enter it.
+Install with:
 
 ```sh
-$ mkdir IPtoCountry-Mapping
-$ cd IPtoCountry-Mapping
+$ npm install ipident
 ```
 
-The csv module is needed to read a csv file.
+Or get it from the source: [ipident]
 
-```sh
-$ npm install csv
+The IP lookup data is available at [master_ip_address.csv.gz]. Extract them into `node_modules/ipident/data/` directory.
+
+Usage
+-----
+
+```javascript
+var ipident = require('ipident');
+
+function doLookup() {
+    ipident.retrieveCityInfo('125.163.49.39', function (data) {
+        console.log(data);
+    });
+}
+
+// loads data into redis
+ipident.loadData(doLookup);
+
 ```
 
-The redis module is needed to access the redis database.
-```sh
-$ npm install hiredis redis
+API
+---
+
+### loadData(callback)
+
+Read the data from csv file and load them to redis data store. This application only use 1 key, `ipident:ipaddress`.
+Usually this function isn't used directly, use `autoLoad` instead.
+
+### autoLoad(callback)
+
+Check the data in redis and load them if necessary. This function is used in starting up the application to ensure the data is ready.
+
+```javascript
+var ipident = require('ipident');
+
+ipident.autoLoad();
 ```
 
-Mocha and should modules are needed to do unit testing. We'll install mocha globally, so other projects can use it too.
+### retrieveCityInfo(ip_address, callback)
 
-```sh
-$ sudo npm install -g mocha
-$ npm install should
-```
+This is the main function to lookup city information.
 
-And we'll use underscore.string module to help us with some string manipulation functions.
+### clearData(callback)
 
-```sh
-$ npm install underscore.string
-```
+Deletes all data from redis
 
+### countData(callback)
 
-References
-----------
- 1. [Node CSV]
- 2. [Node Redis]
- 3. [Mocha]
+Count all data from redis
 
-  [IPtoCountry-Mapping]: https://github.com/bb245/IPtoCountry-Mapping
-  [Node CSV]: http://www.adaltas.com/projects/node-csv/
-  [Node Redis]: https://github.com/mranney/node_redis
-  [mocha]: http://visionmedia.github.io/mocha/
+  [ipident]: https://github.com/Webizly/plp/tree/master/ipident/
+  [master_ip_address.csv]: https://github.com/valmy/IPtoCountry-Mapping/raw/master/data/master_ip_address.csv.gz
