@@ -17,7 +17,7 @@ $ npm install ipident
 
 Or get it from the source: [ipident]
 
-The IP lookup data is available at [master_ip_address.csv.gz]. Extract them into `node_modules/ipident/data/` directory.
+The IP lookup data is available at [lookup data]. Extract them into `node_modules/ipident/data/` directory.
 
 Usage
 -----
@@ -32,7 +32,7 @@ function doLookup() {
 }
 
 // loads data into redis
-ipident.loadData(doLookup);
+ipident.autoLoad(doLookup);
 
 ```
 
@@ -67,4 +67,4 @@ Deletes all data from redis
 Count all data from redis
 
   [ipident]: https://github.com/Webizly/plp/tree/master/ipident/
-  [master_ip_address.csv]: https://github.com/valmy/IPtoCountry-Mapping/raw/master/data/master_ip_address.csv.gz
+  [lookup data]: https://github.com/valmy/IPtoCountry-Mapping/raw/master/data/master_ip_address.csv.gz

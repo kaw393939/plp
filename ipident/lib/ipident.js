@@ -31,7 +31,7 @@ exports.ipidentSingleton = (function () {
                 client.del('ipident:ipaddress');
 
                 csv()
-                    .from.stream(fs.createReadStream('./data/master_ip_address.csv'), {
+                    .from.stream(fs.createReadStream(__dirname + '/../data/master_ip_address.csv'), {
                         columns: ['ip_start_num', 'ip_end_num', 'city', 'region_name',
                                   'country_name', 'postal_code', 'latitude', 'longitude', 'metro_code',
                                   'area_code']
