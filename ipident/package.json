@@ -1,4 +1,4 @@
-1;3400;0c{
+{
   "author": "T. Budiman <tbudiman@gmail.com>",
   "name": "ipident",
   "description": "Node web server application to identify the location of IP addresses using redis.",
@@ -11,11 +11,11 @@
   "bin": {
     "ipident": "./bin/ipident.js"
   },
-  "dependencies": {'csv': '~0.2.9', 
-  		  'redis': '~0.8.2', 
-		  'underscore.string': '~2.3.1'},
-  "devDependencies": {'should': '~1.2.2'},
-  "optionalDependencies": {'hiredis': '~0.1.15'},
+  "dependencies": {"csv": "*", 
+  		  "redis": "~0.8.2", 
+		  "underscore.string": "*"},
+  "devDependencies": {"should": "*"},
+  "optionalDependencies": {"hiredis": "*"},
   "engines": {
     "node": "*"
   }
