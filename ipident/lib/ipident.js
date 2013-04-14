@@ -41,11 +41,15 @@ exports.ipidentSingleton = (function () {
                     })
                     .on('end', function () {
                         console.log('finished loading data');
-                        callback();
+                        if (callback) { 
+                            callback();
+                        }
                     })
                     .on('error', function (error) {
                         console.log(error.message);
-                        callback(error);
+                        if (callback) { 
+                            callback(error);
+                        }
                     });
             },
 
@@ -56,14 +60,18 @@ exports.ipidentSingleton = (function () {
                         instance.loadData(callback);
                     } else {
                         console.log('data loaded');
-                        callback(err);
+                        if (callback) {
+                            callback(err);
+                        }
                     }
                 });
             },
 
             countData: function (callback) {
                 client.zcount('ipident:ipaddress', '-inf', 'inf', function (err, reply) {
-                    callback(reply);
+                    if (callback) {
+                        callback(reply);
+                    }
                 });
             },
 
@@ -73,7 +81,7 @@ exports.ipidentSingleton = (function () {
             retrieveCityInfo: function (ip_address, callback) {
                 var long_ip = inet.aton(ip_address);
                 client.zrangebyscore("ipident:ipaddress", long_ip, "inf", 'limit', 0, 1, function (err, reply) {
-                    if (reply.length === 1) {
+                    if (callback && reply.length === 1) {
                         var data = JSON.parse(reply[0]);
 
                         // make sure the ip_address is within range
