@@ -33,8 +33,8 @@ describe('ipident start with empty data', function () {
 
             ipident.loadData(function () {
                 ipident.countData(function (data) {
-                    // $ wc data/master_ip_address.csv should provide the correct number
-                    data.should.equal(2254131);
+                    // $ wc data/GeoLiteCity-Blocks.csv should provide the correct number
+                    data.should.equal(2244372);
                     done();
                 });
             });
@@ -46,7 +46,7 @@ describe('ipident start with empty data', function () {
             this.timeout(0);
             ipident.autoLoad(function () {
                 ipident.countData(function (data) {
-                    data.should.equal(2254131);
+                    data.should.equal(2244372);
                     done();
                 });
             });
@@ -66,7 +66,7 @@ describe('ipident start with filled data', function () {
         ipident.clearData(done);
     });
 
-    describe('autoLoad', function () {
+    describe('#autoLoad', function () {
         it('Auto Load with data already in redis should do nothing', function (done) {
             setTimeout(done, 5000);
             ipident.autoLoad(done);
@@ -76,7 +76,7 @@ describe('ipident start with filled data', function () {
     describe('#countData', function () {
         it('Count Data with filled data should provide the correct count', function (done) {
             ipident.countData(function (data) {
-                data.should.equal(2254131);
+                data.should.equal(2244372);
                 done();
             });
         });
@@ -85,7 +85,7 @@ describe('ipident start with filled data', function () {
     describe('#retrieveCityInfo', function () {
         it('IP Address 125.163.49.39 should point to Bandung', function (done) {
             ipident.retrieveCityInfo('125.163.49.39', function (data) {
-                data.city.should.equal('Bandung');
+                data.city_name.should.equal('Bandung');
                 done();
             });
         });

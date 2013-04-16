@@ -13,9 +13,9 @@ app.get('/', function(req, res) {
         if (data) {
             var city_info, diff;
 
-            city_info = "City: " + data.city + "\n";
+            city_info = "City: " + data.city_name + "\n";
             city_info += "Region Name: " + data.region_name + "\n";
-            city_info += "Country: " + data.country_name + "\n";
+            city_info += "Country: " + data.country_code + "\n";
             city_info += "Postal Code: " + data.postal_code + "\n";
             city_info += "Latitude: " + data.latitude + "\n";
             city_info += "Longitude: " + data.longitude + "\n";
@@ -47,9 +47,9 @@ app.get(/\/ipv4\/(\d+\.\d+\.\d+\.\d+)/, function(req, res) {
         if (data) {
             var city_info, diff;
 
-            city_info = "City: " + data.city + "\n";
+            city_info = "City: " + data.city_name + "\n";
             city_info += "Region Name: " + data.region_name + "\n";
-            city_info += "Country: " + data.country_name + "\n";
+            city_info += "Country: " + data.country_code + "\n";
             city_info += "Postal Code: " + data.postal_code + "\n";
             city_info += "Latitude: " + data.latitude + "\n";
             city_info += "Longitude: " + data.longitude + "\n";

@@ -17,7 +17,13 @@ $ npm install ipident
 
 Or get it from the source: [ipident]
 
-The IP lookup data is available at [lookup data]. Extract them into `node_modules/ipident/data/` directory.
+The IP lookup data is available at [geolite]. Download the GeoLite City data in CSV format.
+Extract them into `node_modules/ipident/data/` directory. Note that there should be 2 files:
+
+```
+node_modules/ipident/data/GeoLiteCity-Blocks.csv
+node_modules/ipident/data/GeoLiteCity-Location.csv
+```
 
 Usage
 -----
@@ -57,9 +63,9 @@ ipident.autoLoad();
 ### retrieveCityInfo(ip_address, callback(data))
 
 This is the main function to lookup city information. The returned data is an object with the following fields:
- * city
+ * city_name
  * region_name
- * country
+ * country_code
  * postal_code
  * latitude
  * longitude
@@ -102,9 +108,9 @@ app.get('/', function(req, res) {
         if (data) {
             var city_info, diff;
 
-            city_info = "City: " + data.city + "\n";
+            city_info = "City: " + data.city_name + "\n";
             city_info += "Region Name: " + data.region_name + "\n";
-            city_info += "Country: " + data.country_name + "\n";
+            city_info += "Country: " + data.country_code + "\n";
             city_info += "Postal Code: " + data.postal_code + "\n";
             city_info += "Latitude: " + data.latitude + "\n";
             city_info += "Longitude: " + data.longitude + "\n";
@@ -136,9 +142,9 @@ app.get(/\/ipv4\/(\d+\.\d+\.\d+\.\d+)/, function(req, res) {
         if (data) {
             var city_info, diff;
 
-            city_info = "City: " + data.city + "\n";
+            city_info = "City: " + data.city_name + "\n";
             city_info += "Region Name: " + data.region_name + "\n";
-            city_info += "Country: " + data.country_name + "\n";
+            city_info += "Country: " + data.country_code + "\n";
             city_info += "Postal Code: " + data.postal_code + "\n";
             city_info += "Latitude: " + data.latitude + "\n";
             city_info += "Longitude: " + data.longitude + "\n";
@@ -169,4 +175,5 @@ console.log('Listening on port 3001');
 
   [ipident]: https://github.com/Webizly/plp/tree/master/ipident/
   [lookup data]: https://github.com/valmy/IPtoCountry-Mapping/raw/master/data/master_ip_address.csv.gz
+  [geolite]: http://dev.maxmind.com/geoip/geolite
 

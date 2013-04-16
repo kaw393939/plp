@@ -10,7 +10,8 @@
   "main": "./index.js",
   "dependencies": {"csv": "*", 
   		  "redis": "~0.8.2", 
-		  "underscore.string": "*"},
+		  "underscore.string": "*",
+                  "async": "*"},
   "devDependencies": {"should": "*"},
   "optionalDependencies": {"hiredis": "*"},
   "engines": {
