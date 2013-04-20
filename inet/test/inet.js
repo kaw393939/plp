@@ -1,6 +1,6 @@
 /*global describe, it*/
 "use strict";
-var inet = require("../lib/inet"),
+var inet = require("../index"),
     should = require("should");
 
 
@@ -15,8 +15,11 @@ describe('inet', function () {
         it('should calculate 255.255.255.255 to 4294967295', function () {
             inet.aton('255.255.255.255').should.equal(4294967295);
         });
-        it('should return null for bad input string', function () {
+        it('should return null for bad input string (missing a dot)', function () {
             should.not.exist(inet.aton('123.123.123'));
+        });
+        it('should return null for bad input string (non-numeric)', function () {
+            should.not.exist(inet.aton('123.123.123.a'));
         });
     });
     describe('#ntoa()', function () {

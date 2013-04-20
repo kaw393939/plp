@@ -4,7 +4,7 @@ var fs = require('fs');
 var csv = require('csv');
 var redis = require('redis');
 var async = require('async');
-var inet = require('./lib/inet');
+var inet = require('inet');
 
 // ipident is a Singleton
 var ipidentSingleton = (function () {
