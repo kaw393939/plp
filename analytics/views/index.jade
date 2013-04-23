@@ -1,5 +1,11 @@
 extends layout
 
 block content
+  script
+    var socket = io.connect('http://localhost');
+    socket.on('news', function (data) {
+      console.log(data);
+      socket.emit('other events', { my: 'data'});
+    });
   h1= title
   p Welcome to #{title}
