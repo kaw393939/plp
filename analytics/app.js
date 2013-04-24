@@ -6,9 +6,11 @@
 var express = require('express')
   , routes = require('./routes')
   , user = require('./routes/user')
+  , dashboard = require('./routes/dashboard')
   , http = require('http')
   , path = require('path')
-  , io = require('socket.io');
+  , io = require('socket.io'),
+  , moment = require('moment');
 
 var app = express();
 
@@ -33,6 +35,7 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.get('/users', user.list);
+app.get('/dashboard', dashboard.index);
 
 var server = http.createServer(app);
 io = io.listen(server);
@@ -41,9 +44,12 @@ server.listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
 
+
 io.sockets.on('connection', function (socket) {
-    socket.emit('news', { hello: 'world' });
-    socket.on('other events', function (data) {
+
+    socket.on('message', function (data) {
         console.log(data);
+        io.sockets.emit('dashboard', {'url': data});
     });
 });
+
