@@ -7,46 +7,21 @@ var express = require('express')
   , routes = require('./routes')
   , user = require('./routes/user')
   , dashboard = require('./routes/dashboard')
+  , analytics = require('./lib/analytics')
   , http = require('http')
   , path = require('path')
   , io = require('socket.io')
   , moment = require('moment')
   , redis = require('redis')
-  , useragent = require('express-useragent');
+  , useragent = require('express-useragent')
+  , async = require('async');
 
 var app = express(),
     db = redis.createClient();
 
 // all environments
 app.use(useragent.express());
-app.use(function (req, res, next) {
-    var site = req.host,
-        page = req.path,
-        ip = req.ip,
-        browser = req.useragent.Browser,
-        os = req.useragent.OS,
-        platform = req.useragent.Platform,
-        version = req.useragent.Version,
-        time = moment().format('YYYYMMDDHHmmss');
-
-    db.sadd('anl:browser', browser);
-    db.sadd('anl:os', os);
-    db.sadd('anl:platform', platform);
-    db.sadd('anl:version', version);
-    db.sadd('anl:ip', ip);
-    db.incr('anl:' + site + ':' + page + ':total');
-    db.incr('anl:' + site + ':' + page + ':time:' + time);
-    db.incr('anl:' + site + ':' + page + ':browser:' + browser);
-    db.incr('anl:' + site + ':' + page + ':os:' + os);
-    db.incr('anl:' + site + ':' + page + ':platform:' + platform);
-    db.incr('anl:' + site + ':' + page + ':version:' + version);
-    db.incr('anl:' + site + ':' + page + ':ip:' + ip);
-
-    console.log('hit: ' + time);
-    io.sockets.in('dashboard').emit('hit', {time: time, browser: browser, page: page});
-
-    next();
-});
+app.use(analytics.store);
 
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
@@ -83,3 +58,5 @@ io.sockets.on('connection', function (socket) {
 
 });
 
+var broadcast = analytics.broadcastFactory(io); 
+setInterval(broadcast, 10000);
