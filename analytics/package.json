@@ -15,6 +15,7 @@
     "underscore.string": "*",
     "moment": "*",
     "socket.io": "*",
-    "async": "*"
+    "async": "*",
+    "mongoose": "*"
   }
 }

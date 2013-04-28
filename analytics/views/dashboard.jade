@@ -9,6 +9,6 @@ block content
     var socket = io.connect('http://localhost:3000');
     socket.on('connect', function () {
       socket.on('hit', function (msg) {
-        $('#dashboard').append('<li>' + msg.time + ': ' + JSON.stringify(msg.browser) + ' ' + JSON.stringify(msg.page) + '</li>');
+        $('#dashboard').append('<li>' + JSON.stringify(msg) + '</li>');
       });
     });

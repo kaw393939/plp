@@ -19,6 +19,8 @@ var express = require('express')
 var app = express(),
     db = redis.createClient();
 
+analytics.mongoconnect();
+
 // all environments
 app.use(useragent.express());
 app.use(analytics.store);
@@ -60,3 +62,6 @@ io.sockets.on('connection', function (socket) {
 
 var broadcast = analytics.broadcastFactory(io); 
 setInterval(broadcast, 10000);
+
+analytics.storeMongo();
+//setInterval(analytics.storeMongo, 15000);
