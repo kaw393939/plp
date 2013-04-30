@@ -19,3 +19,13 @@ MyCtrl1.$inject = ['$scope', 'socket'];
 function MyCtrl2() {
 }
 MyCtrl2.$inject = [];
+
+function DashboardCtrl($scope, socket) {
+    socket.on('send:dashboard', function (data) {
+        $scope.total = data.total;
+    });
+    socket.on('send:time', function (data) {
+        $scope.time = data.time;
+    });
+}
+DashboardCtrl.$inject = ['$scope', 'socket'];
