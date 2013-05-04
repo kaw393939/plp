@@ -5,19 +5,25 @@ var redisStore = require('../lib/redisStore');
 
 module.exports = function (socket) {
 
-  socket.join('dashboard');
-
-  socket.emit('send:name', {
-    name: 'Bob'
-  });
-
-  setInterval(function () {
-    socket.emit('send:time', {
-      time: (new Date()).toString()
+    socket.on('subscribe:dashboard', function(data) { 
+        socket.join('dashboard'); 
     });
-  }, 1000);
+
+    socket.on('unsubscribe:dashboard', function(data) { 
+        socket.leave('dashboard'); 
+    });
+
+    socket.emit('send:name', {
+        name: 'Bob'
+    });
 
     setInterval(function () {
-        redisStore.broadcastFactory(socket)();
+        socket.emit('send:time', {
+            time: (new Date()).toString()
+        });
+    }, 1000);
+
+    setInterval(function () {
+        redisStore.broadcastFactory(socket.manager.sockets)();
     }, 5000);
 };

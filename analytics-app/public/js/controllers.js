@@ -21,6 +21,8 @@ function MyCtrl2() {
 MyCtrl2.$inject = [];
 
 function DashboardCtrl($scope, socket) {
+    socket.emit('subscribe:dashboard');
+
     socket.on('send:dashboard', function (data) {
         $scope.total = data.total;
     });
