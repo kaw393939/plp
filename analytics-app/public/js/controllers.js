@@ -2,10 +2,19 @@
 
 /* Controllers */
 
-function AppCtrl($scope, socket) {
+function AppCtrl($scope, $http) {
+  $http({method: 'GET', url: '/api/name'}).
+  success(function(data, status, headers, config) {
+     $scope.name = data.name;
+  }).
+  error(function(data, status, headers, config) {
+    $scope.name = 'Error!'
+  });
+/*
   socket.on('send:name', function (data) {
     $scope.name = data.name;
   });
+*/
 }
 
 function MyCtrl1($scope, socket) {
