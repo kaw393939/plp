@@ -7,15 +7,26 @@ var transientAnalyticsSingleton = (function () {
     // reference to the Singleton
     var instance;
 
-    function init() {
-
-        var client = redis.createClient();
+    function init(port, host) {
+        var client;
+        port = (typeof port === "undefined") ? null : port;
+        host = (typeof host === "undefined") ? null : host;
+        client = redis.createClient(port, host);
 
         client.on('error', function (error) {
             console.log(error.message);
         });
 
         return {
+            // public property
+            site: 'localhost',
+
+            configure: function (post, host) {
+                port = (typeof port === "undefined") ? null : port;
+                host = (typeof host === "undefined") ? null : host;
+                client.quit();
+                client = redis.createClient(port, host);
+            },
 
             store: function (req, res, next) {
                 var site = req.host,
@@ -69,26 +80,26 @@ var transientAnalyticsSingleton = (function () {
             },
 
             getTotal: function (callback) {
-                client.get('anl:localhost', function (err, total) {
+                client.get('anl:' + instance.site, function (err, total) {
                     callback(err, total);
                 });
             },
 
-            totalBySecondFactory: function (time) {
+            totalBySecondTaskFactory: function (time) {
                 return function (callback) {
-                    client.get('anl:localhost:' + time, function (err, total) {
+                    client.get('anl:' + instance.site + ':' + time, function (err, total) {
                         callback(err, total);
                     });
                 };
             },
 
-            browserFunc: function (callback) {
+            browserTaskFactory: function (callback) {
                 client.smembers('anl:browser', function (err, members) {
                     var browserQueries = [], i;
 
                     function makeFunc(brw) {
                         return function (callback) {
-                            client.get('anl:localhost:browser:' + brw, function (err, brwcount) {
+                            client.get('anl:' + instance.site + ':browser:' + brw, function (err, brwcount) {
                                 callback(err, brwcount);
                             });
                         };
@@ -103,14 +114,13 @@ var transientAnalyticsSingleton = (function () {
                         for (i = 0; i < members.length; i += 1) {
                             browsers[members[i]] = results[i];
                         }
-                        console.log(browsers);
                         callback(err, browsers);
                     });
                 });
             },
 
-            pageFunc: function (callback) {
-                client.keys('anl:localhost:*:total', function (err, keys) {
+            pageTaskFactory: function (callback) {
+                client.keys('anl:' + instance.site + ':*:total', function (err, keys) {
                     var pages = [], i;
 
                     function makeFunc(page) {
@@ -127,13 +137,14 @@ var transientAnalyticsSingleton = (function () {
 
                     async.parallel(pages, function (err, results) {
                         var data = [],
-                        i,
+                        i, re,
                         keyparts,
                         page;
 
                         for (i = 0; i < keys.length; i += 1) {
                             page = {};
-                            keyparts = /^anl:localhost:(.+):total$/.exec(keys[i]);
+                            re = new RegExp("^anl:" + instance.site + ":(.+):total$");
+                            keyparts = re.exec(keys[i]);
                             if (keyparts !== null) {
                                 page.name = keyparts[1];
                                 page.pgcount = results[i];
@@ -147,16 +158,20 @@ var transientAnalyticsSingleton = (function () {
                 });
             },
 
-            broadcastFactory: function (socket) {
+            broadcastFactory: function (sockets) {
                 return function broadcast(callback) {
                     async.parallel(
-                        [instance.getTimeAsync, instance.getTotal, instance.browserFunc, instance.pageFunc, 
-                         instance.totalBySecondFactory(instance.getTime())],
+                        [instance.getTimeAsync, 
+                         instance.getTotal, 
+                         instance.browserTaskFactory, 
+                         instance.pageTaskFactory, 
+                         instance.totalBySecondTaskFactory(instance.getTime())
+                        ],
                         function (err, results) {
-                            socket.in('dashboard').emit('send:dashboard', {time: results[0], 
+                            sockets.in('dashboard').emit('send:dashboard', {time: results[0], 
                                                         total: results[1],
-                                                        browser: results[2], 
-                                                        page: results[3],
+                                                        browsers: results[2], 
+                                                        pages: results[3],
                                                         current: results[4]});
                         }
                     );

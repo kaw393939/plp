@@ -18,8 +18,13 @@ var config = require('./config/config')[app.get('env')]
   , useragent = require('express-useragent')
   , transientAnalytics = require('./lib/transientAnalytics')
   , mongoose = require('mongoose')
-  , redis = require('redis')
   , fs = require('fs')
+
+// Reconfigure redis if necessary
+if (config.redis_port !== null || config.redis_host !== null) {
+    transientAnalytics.configure(config.redis_port, config.redis_host);
+}
+transientAnalytics.site = config.site;
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');

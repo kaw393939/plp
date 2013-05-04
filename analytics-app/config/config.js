@@ -7,6 +7,7 @@ module.exports = {
     redis_host: null,
     redis_port: null,
     root: rootPath,
+    site: 'localhost',
     app: {
       name: 'Analytics Application (Dev)'
     },
@@ -16,6 +17,7 @@ module.exports = {
     redis_host: null,
     redis_port: null,
     root: rootPath,
+    site: 'invention.org',
     app: {
       name: 'Analytics Application (Test)'
     },

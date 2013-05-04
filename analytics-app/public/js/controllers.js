@@ -25,6 +25,8 @@ function DashboardCtrl($scope, socket) {
 
     socket.on('send:dashboard', function (data) {
         $scope.total = data.total;
+        $scope.browsers = JSON.stringify(data.browsers, undefined, 2);
+        $scope.pages = JSON.stringify(data.pages, undefined, 2);
     });
     socket.on('send:time', function (data) {
         $scope.time = data.time;
