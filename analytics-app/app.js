@@ -16,7 +16,7 @@ var io = require('socket.io').listen(server);
 // Configuration
 var config = require('./config/config')[app.get('env')]
   , useragent = require('express-useragent')
-  , redisStore = require('./lib/redisStore')
+  , transientAnalytics = require('./lib/transientAnalytics')
   , mongoose = require('mongoose')
   , redis = require('redis')
   , fs = require('fs')
@@ -24,7 +24,7 @@ var config = require('./config/config')[app.get('env')]
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(useragent.express());
-app.use(redisStore.store);
+app.use(transientAnalytics.store);
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.static(__dirname + '/public'));

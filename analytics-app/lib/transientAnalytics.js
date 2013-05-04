@@ -2,7 +2,7 @@ var redis = require('redis'),
     moment = require('moment'),
     async = require('async');
 
-var redisStoreSingleton = (function () {
+var transientAnalyticsSingleton = (function () {
 
     // reference to the Singleton
     var instance;
@@ -181,4 +181,4 @@ var redisStoreSingleton = (function () {
 
 }());
 
-module.exports = redisStoreSingleton.getInstance();
+module.exports = transientAnalyticsSingleton.getInstance();

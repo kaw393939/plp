@@ -1,7 +1,7 @@
 /*
  * Serve content over a socket
  */
-var redisStore = require('../lib/redisStore');
+var transientAnalytics = require('../lib/transientAnalytics');
 
 module.exports = function (socket) {
 
@@ -24,6 +24,6 @@ module.exports = function (socket) {
     }, 1000);
 
     setInterval(function () {
-        redisStore.broadcastFactory(socket.manager.sockets)();
+        transientAnalytics.broadcastFactory(socket.manager.sockets)();
     }, 5000);
 };
