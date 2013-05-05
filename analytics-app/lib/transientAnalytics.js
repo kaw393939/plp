@@ -85,6 +85,20 @@ var transientAnalyticsSingleton = (function () {
                 });
             },
 
+            getTotalMinute: function (minute, callback) {
+                var script = '\
+local total = 0 \
+local keys = redis.call("keys", KEYS[1]) \
+for i=1,# keys do \
+    local hits = tonumber(redis.call("get", keys[i])) \
+    total = total + hits \
+end \
+return total';
+                client.eval(script, 1, 'anl:' + instance.site + ':' + minute + '*', function (err, total) {
+                    callback(err, total);
+                });
+            },
+
             totalBySecondTaskFactory: function (time) {
                 return function (callback) {
                     client.get('anl:' + instance.site + ':' + time, function (err, total) {

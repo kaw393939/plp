@@ -22,8 +22,8 @@ var config = require('./config/config')[app.get('env')]
   , fs = require('fs')
 
 // Reconfigure redis if necessary
-if (config.redis_port !== null || config.redis_host !== null) {
-    transientAnalytics.configure(config.redis_port, config.redis_host);
+if (config.redisPort !== null || config.redisHost !== null) {
+    transientAnalytics.configure(config.redisPort, config.redisHost);
 }
 transientAnalytics.site = config.site;
 
@@ -54,6 +54,9 @@ var models_path = __dirname + '/models'
 fs.readdirSync(models_path).forEach(function (file) {
   require(models_path+'/'+file)
 })
+
+var persistentAnalytics = require('./lib/persistentAnalytics')
+persistentAnalytics.startTimer(config.syncTime);
 
 // Routes
 
