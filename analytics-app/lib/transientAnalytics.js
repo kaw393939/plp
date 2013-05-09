@@ -1,6 +1,7 @@
 var redis = require('redis'),
     moment = require('moment'),
-    async = require('async');
+    async = require('async'),
+    _s = require('underscore.string');
 
 var transientAnalyticsSingleton = (function () {
 
@@ -37,6 +38,10 @@ var transientAnalyticsSingleton = (function () {
                     platform = req.useragent.Platform,
                     version = req.useragent.Version,
                     time = moment().format('YYYYMMDDHHmmss');
+
+                browser = _s.classify(browser);
+                platform = _s.classify(platform);
+                version = _s.classify(version);
 
                 client.sadd('anl:site', site);
                 client.sadd('anl:browser', browser);
@@ -76,12 +81,36 @@ var transientAnalyticsSingleton = (function () {
 
             getTimeAsync: function (callback) {
                 var time = instance.getTime();
-                callback(null, time);
+                if (callback != undefined) { 
+                    callback(null, time);
+                }
             },
 
             getTotal: function (callback) {
                 client.get('anl:' + instance.site, function (err, total) {
-                    callback(err, total);
+                    if (callback !== undefined) {
+                        callback(err, total);
+                    }
+                });
+            },
+
+            getBrowsers: function (callback) {
+                var script = '\
+local browsers = redis.call("smembers", KEYS[1]) \
+for i=1,# browsers do \
+    local hits = tonumber(redis.call("get", "anl:" .. ARGV[1] .. ":browser:" .. browsers[i])) \
+    table.insert(browsers, hits) \
+end \
+return browsers';
+                client.eval(script, 1, 'anl:browser', instance.site, function (err, browsers) {
+                    var len = browsers.length;
+                    var browser = {};
+                    for (var i=0; i<len/2; i+=1) {
+                        browser[browsers[i]] = browsers[i+len/2];
+                    }
+                    if (callback !== undefined) {
+                        callback(err, browser);
+                    }
                 });
             },
 
@@ -95,14 +124,43 @@ for i=1,# keys do \
 end \
 return total';
                 client.eval(script, 1, 'anl:' + instance.site + ':' + minute + '*', function (err, total) {
-                    callback(err, total);
+                    if (callback !== undefined) {
+                        callback(err, total);
+                    }
+                });
+            },
+
+            getBrowserMinute: function (minute, callback) {
+                var script = '\
+local browsers = redis.call("smembers", KEYS[1]) \
+for i=1,# browsers do \
+    local keys = redis.call("keys", "anl:" .. ARGV[1] .. ":browser:" .. browsers[i] .. ":time:" .. ARGV[2] .. "*") \
+    local total = 0 \
+    for j=1,# keys do \
+        local hits = tonumber(redis.call("get", keys[j])) \
+        total = total + hits \
+    end \
+    table.insert(browsers, total) \
+end \
+return browsers';
+                client.eval(script, 1, 'anl:browser', instance.site, minute, function (err, browsers) {
+                    var len = browsers.length;
+                    var browser = {};
+                    for (var i=0; i<len/2; i+=1) {
+                        browser[browsers[i]] = browsers[i+len/2];
+                    }
+                    if (callback !== undefined) {
+                        callback(err, browser);
+                    }
                 });
             },
 
             totalBySecondTaskFactory: function (time) {
                 return function (callback) {
                     client.get('anl:' + instance.site + ':' + time, function (err, total) {
-                        callback(err, total);
+                        if (callback !== undefined) {
+                            callback(err, total);
+                        }
                     });
                 };
             },

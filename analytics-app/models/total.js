@@ -3,9 +3,16 @@ var mongoose = require('mongoose');
 var totalSchema = mongoose.Schema(
     { site: String,
       timestamp: Date, 
-      hits: Number }
+      hits: Number, 
+      browser: {
+          Firefox: Number,
+          Chrome: Number
+      }
+    }
 );
 
 // totalSchema.methods = {};
+
+totalSchema.index({ site: 1 });
 
 mongoose.model('Total', totalSchema);

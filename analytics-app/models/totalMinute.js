@@ -9,7 +9,9 @@ var totalMinuteSchema = mongoose.Schema(
       day: Number,
       hour: Number,
       minute: Number,
-      hits: Number }
+      hits: Number,
+      browser: { Firefox: Number, Chrome: Number }
+    }
 );
 
 // totalSchema.methods = {};

@@ -13,6 +13,7 @@
     , "hiredis": "*"
     , "redis": "*"
     , "express-useragent": "*"
+    , "underscore": "*"
     , "underscore.string": "*"
     , "moment": "*"
     , "async": "*"
