@@ -1,0 +1,19 @@
+{
+    "globals": {
+        "jasmine": false,
+        "spyOn": false,
+        "it": false,
+        "console": false,
+        "describe": false,
+        "expect": false,
+        "beforeEach": false,
+        "waits": false,
+        "waitsFor": false,
+        "runs": false
+    },
+
+    "browser": true,
+    "node" : true,
+    "laxcomma": true,
+    "indent": 2
+}

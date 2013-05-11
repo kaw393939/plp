@@ -1,22 +1,20 @@
-'use strict';
-
 /* Controllers */
 
 function AppCtrl($scope, $http) {
   $http({method: 'GET', url: '/api/name'}).
   success(function(data, status, headers, config) {
-     $scope.name = data.name;
+    $scope.name = data.name;
   }).
   error(function(data, status, headers, config) {
-    $scope.name = 'Error!'
+    $scope.name = 'Error!';
   });
 
   $http({method: 'GET', url: '/api/total'}).
     success(function(data, status, headers, config) {
-     $scope.total = JSON.stringify(data);
+      $scope.total = JSON.stringify(data);
     }).
     error(function(data, status, headers, config) {
-      $scope.total = 'Error!'
+      $scope.total = 'Error!';
     });
 
 /*
@@ -38,16 +36,16 @@ function MyCtrl2() {
 MyCtrl2.$inject = [];
 
 function DashboardCtrl($scope, socket) {
-    socket.emit('subscribe:dashboard');
+  socket.emit('subscribe:dashboard');
 
-    socket.on('send:dashboard', function (data) {
-        $scope.total = data.total;
-        $scope.browsers = JSON.stringify(data.browsers, undefined, 2);
-        $scope.pages = JSON.stringify(data.pages, undefined, 2);
-    });
-    socket.on('send:time', function (data) {
-        $scope.time = data.time;
-    });
+  socket.on('send:dashboard', function (data) {
+    $scope.total = data.total;
+    $scope.browsers = JSON.stringify(data.browsers, undefined, 2);
+    $scope.pages = JSON.stringify(data.pages, undefined, 2);
+  });
+  socket.on('send:time', function (data) {
+    $scope.time = data.time;
+  });
 }
 DashboardCtrl.$inject = ['$scope', 'socket'];
 

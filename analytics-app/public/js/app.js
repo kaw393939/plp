@@ -1,6 +1,4 @@
-'use strict';
-
-
+/*global MyCtrl1:false, MyCtrl2:false, DashboardCtrl:false, TotalCtrl:false */
 // Declare app level module which depends on filters, and services
 var app = angular.module('analyticsApp', ['analyticsApp.filters', 'analyticsApp.services', 'analyticsApp.directives']).
   config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {

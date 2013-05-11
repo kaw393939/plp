@@ -4,10 +4,10 @@
 
 exports.name = function (req, res) {
   res.json({
-  	name: 'Bob'
+    name: 'Bob'
   });
 };
 
 exports.total = function (req, res) {
-    res.json({ text: 'Hello' });
+  res.json({ text: 'Hello' });
 };

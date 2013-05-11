@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -19,11 +18,11 @@ var config = require('./config/config')[app.get('env')]
   , useragent = require('express-useragent')
   , transientAnalytics = require('./lib/transientAnalytics')
   , mongoose = require('mongoose')
-  , fs = require('fs')
+  , fs = require('fs');
 
 // Reconfigure redis if necessary
 if (config.redisPort !== null || config.redisHost !== null) {
-    transientAnalytics.configure(config.redisPort, config.redisHost);
+  transientAnalytics.configure(config.redisPort, config.redisHost);
 }
 transientAnalytics.site = config.site;
 
@@ -47,15 +46,15 @@ if ('production' == app.get('env')) {
 }
 
 // Bootstrap db connection
-mongoose.connect(config.mdb)
+mongoose.connect(config.mdb);
 
 // Bootstrap models
-var models_path = __dirname + '/models'
+var models_path = __dirname + '/models';
 fs.readdirSync(models_path).forEach(function (file) {
-  require(models_path+'/'+file)
-})
+  require(models_path+'/'+file);
+});
 
-var persistentAnalytics = require('./lib/persistentAnalytics')
+var persistentAnalytics = require('./lib/persistentAnalytics');
 persistentAnalytics.startTimer(config.syncTime);
 
 // Routes

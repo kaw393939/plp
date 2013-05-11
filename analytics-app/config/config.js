@@ -1,5 +1,5 @@
 var path = require('path')
-  , rootPath = path.normalize(__dirname + '/..')
+  , rootPath = path.normalize(__dirname + '/..');
 
 module.exports = {
   development: {
@@ -25,4 +25,4 @@ module.exports = {
     syncTime: 10000
   },
   production: {}
-}
+};

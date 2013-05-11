@@ -1,7 +1,4 @@
-'use strict';
-
 /* Services */
-
 
 // Demonstrate how to register services
 // In this case it is a simple value service.
@@ -11,7 +8,7 @@ angular.module('analyticsApp.services', []).
     var socket = io.connect();
     return {
       on: function (eventName, callback) {
-        socket.on(eventName, function () {  
+        socket.on(eventName, function () {
           var args = arguments;
           $rootScope.$apply(function () {
             callback.apply(socket, args);
@@ -26,7 +23,7 @@ angular.module('analyticsApp.services', []).
               callback.apply(socket, args);
             }
           });
-        })
+        });
       }
     };
   });

@@ -17,6 +17,6 @@ var totalMinuteSchema = mongoose.Schema(
 );
 
 // totalSchema.methods = {};
-totalMinuteSchema.index({ site: 1, time: -1 }, { site: 1, jsdate: -1 })
+totalMinuteSchema.index({ site: 1, time: -1 }, { site: 1, jsdate: -1 });
 
 mongoose.model('TotalMinute', totalMinuteSchema);
