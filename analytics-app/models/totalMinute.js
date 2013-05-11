@@ -10,10 +10,12 @@ var totalMinuteSchema = mongoose.Schema(
       hour: Number,
       minute: Number,
       hits: Number,
-      browser: { Firefox: Number, Chrome: Number }
+      browser: { Firefox: Number, Chrome: Number },
+      pages: [ { page: String, hits: Number } ]
     }
 );
 
 // totalSchema.methods = {};
+totalMinuteSchema.index({ site: 1, time: -1 })
 
 mongoose.model('TotalMinute', totalMinuteSchema);

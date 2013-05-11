@@ -1,5 +1,6 @@
 var async = require('async'),
     moment = require('moment'),
+    _ = require('underscore'),
     mongoose = require('mongoose'),
     Total = mongoose.model('Total'),
     TotalMinute = mongoose.model('TotalMinute');
@@ -51,6 +52,33 @@ var persistentAnalyticsSingleton = (function () {
                 } else {
                     if (callback !== undefined) {
                         callback(err, browser);
+                    }
+                }
+            });
+        }
+
+        function syncPage(callback) {
+            trAnl.getPages(function (err, pages) {
+                if (!err) {
+
+                    // Find records
+                    Total.findOne({ site: trAnl.site }, function (err, total) {
+                        for (page in pages) {
+                            var pageobj = _.findWhere(total.pages, { page: page });
+                            if (pageobj) { // existing page: update hits
+                                var idx = total.pages.indexOf(pageobj);
+                                pageobj.hits = pages[page];
+                                total.pages.set(idx, pageobj);
+                            } else { // new page
+                                total.pages.push({ page: page, hits: pages[page] });
+                            }
+                        }
+                        total.save(callback);
+                    });
+
+                } else {
+                    if (callback !== undefined) {
+                        callback(err, pages);
                     }
                 }
             });
@@ -124,7 +152,48 @@ var persistentAnalyticsSingleton = (function () {
                         );
                     } else {
                         console.log(err);
+                        callback(err, browser);
+                    }
+                });
+            }
+
+            updateMinute(now, function (err, data) {
+                // make sure last minute data is complete
+                if (now.second() <= 10) {
+                    updateMinute(lastMinute, function (err2, data2) {
                         callback(err, data);
+                    });
+                } else {
+                    callback(err, data);
+                }
+            });
+        }
+
+        function syncPagesMinute(callback) {
+            var lastMinute = moment().subtract(1, 'minutes'),
+                now = moment();
+
+            function updateMinute(time, callback) {
+                trAnl.getPagesMinute(time.format('YYYYMMDDHHmm'), function (err, pages) {
+                    if (!err) {
+                        console.log(pages);
+                        TotalMinute.findOne({ site: trAnl.site, time: time.format('YYYYMMDDHHmm') }, function (err, totalMinute) {
+                            console.log(err, totalMinute); 
+                            for (page in pages) {
+                                var pageobj = _.findWhere(totalMinute.pages, { page: page });
+                                if (pageobj) { // existing page: update hits
+                                    var idx = totalMinute.pages.indexOf(pageobj);
+                                    pageobj.hits = pages[page];
+                                    totalMinute.pages.set(idx, pageobj);
+                                } else { // new page
+                                    totalMinute.pages.push({ page: page, hits: pages[page] });
+                                }
+                            }
+                            totalMinute.save(callback);
+                        });
+                    } else {
+                        console.log(err);
+                        callback(err, pages);
                     }
                 });
             }
@@ -145,8 +214,10 @@ var persistentAnalyticsSingleton = (function () {
             var tasks = [
                 syncTotal,
                 syncBrowser,
+                syncPage,
                 syncTotalMinute,
-                syncBrowserMinute
+                syncBrowserMinute,
+                syncPagesMinute,
             ];
             async.parallel(tasks, callback);
         }

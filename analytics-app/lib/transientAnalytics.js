@@ -44,6 +44,7 @@ var transientAnalyticsSingleton = (function () {
                 version = _s.classify(version);
 
                 client.sadd('anl:site', site);
+                client.sadd('anl:sitepage:' + site, page);
                 client.sadd('anl:browser', browser);
                 client.sadd('anl:os', os);
                 client.sadd('anl:platform', platform);
@@ -114,6 +115,34 @@ return browsers';
                 });
             },
 
+            getPages: function (callback) {
+                var script = '\
+local pages = redis.call("keys", "anl:".. ARGV[1] .. ":*:total") \
+local pagetable= {} \
+for i=1,# pages do \
+local prefixlen = string.len("anl: " .. ARGV[1] .. ":") \
+local postfixlen = string.len(":total") + 1 \
+local page = string.sub(pages[i], prefixlen, -1 * postfixlen) \
+  table.insert(pagetable, page) \
+end \
+for i=1,# pages do \
+local hits = tonumber(redis.call("get", pages[i])) \
+  table.insert(pagetable, hits) \
+end \
+return pagetable \
+';
+                client.eval(script, 0, instance.site, function (err, pages) {
+                    var pagesobj = {};
+                    var len = pages.length;
+                    for (var i=0; i<len/2; i+=1) {
+                        pagesobj[pages[i]] = pages[i+len/2];
+                    }
+                    if (callback !== undefined) {
+                        callback(err, pagesobj);
+                    }
+                });
+            },
+
             getTotalMinute: function (minute, callback) {
                 var script = '\
 local total = 0 \
@@ -151,6 +180,36 @@ return browsers';
                     }
                     if (callback !== undefined) {
                         callback(err, browser);
+                    }
+                });
+            },
+
+            getPagesMinute: function (minute, callback) {
+                var script = '\
+local pages = redis.call("keys", "anl:" .. ARGV[1] .. ":*:total") \
+local pagetable = {} \
+for i=1,# pages do \
+  local prefixlen = string.len("anl: " .. ARGV[1] .. ":") \
+  local postfixlen = string.len(":total") + 1 \
+  local pagekey = string.sub(pages[i], 1, -1 * postfixlen) .. ":time:" .. ARGV[2] .. "*" \
+  table.insert(pagetable, string.sub(pages[i], prefixlen, -1 * postfixlen)) \
+  local keys = redis.call("keys", pagekey) \
+  local total = 0 \
+  for j=1,# keys do \
+    local hits = tonumber(redis.call("get", keys[j])) \
+    total = total + hits \
+  end \
+  table.insert(pagetable, total) \
+end \
+return pagetable';
+                client.eval(script, 0, instance.site, minute, function (err, pagetable) {
+                    var pages = {};
+                    for (var i=0; i<pagetable.length; i+=1) {
+                        pages[pagetable[i]] = pagetable[i+1];
+                        i += 1;
+                    }
+                    if (callback !== undefined) {
+                        callback(err, pages);
                     }
                 });
             },

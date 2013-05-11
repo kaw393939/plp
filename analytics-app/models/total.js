@@ -7,7 +7,11 @@ var totalSchema = mongoose.Schema(
       browser: {
           Firefox: Number,
           Chrome: Number
-      }
+      },
+      pages: [{
+          page: String,
+          hits: Number
+      }]
     }
 );
 
