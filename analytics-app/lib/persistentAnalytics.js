@@ -92,7 +92,7 @@ var persistentAnalyticsSingleton = (function () {
                 trAnl.getTotalMinute(time.format('YYYYMMDDHHmm'), function (err, data) {
                     if (!err) {
                         TotalMinute.update(
-                            { site: trAnl.site, time: time.format('YYYYMMDDHHmm') },
+                            { site: trAnl.site, time: time.format('YYYYMMDDHHmm'), jsdate: time.startOf('minute').toDate() },
                             { timestamp: moment().toDate(),
                               year: time.year(),
                               month: time.month(),
@@ -139,7 +139,7 @@ var persistentAnalyticsSingleton = (function () {
                         }
 
                         TotalMinute.update(
-                            { site: trAnl.site, time: time.format('YYYYMMDDHHmm') },
+                            { site: trAnl.site, time: time.format('YYYYMMDDHHmm'), jsdate: time.startOf('minute').toDate() },
                             { timestamp: moment().toDate(),
                               year: time.year(),
                               month: time.month(),
@@ -223,6 +223,22 @@ var persistentAnalyticsSingleton = (function () {
         return {
             startTimer: function (syncTime) {
                 intervalId = setInterval(store, syncTime);
+            },
+
+            minutely: function (start, end, callback) {
+                start = (typeof start === "undefined") ? start : moment.unix(0).toDate();
+                end = (typeof end === "undefined") ? end : moment().toDate();
+                TotalMinute.find({jsdate: {$exists: true, $gte: start, $lte: end}}, 
+                                 {site: 1, jsdate: -1,  hits: 1, _id: 0}, 
+                                 { lean: true }).
+                    sort({jsdate: -1}).
+                    exec(callback);
+            },
+
+            total: function (req, res) {
+                instance.minutely(null, null, function (err, data) {
+                    res.json(data);
+                });
             }
         };
     };
