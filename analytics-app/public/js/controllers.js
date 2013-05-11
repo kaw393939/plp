@@ -10,6 +10,15 @@ function AppCtrl($scope, $http) {
   error(function(data, status, headers, config) {
     $scope.name = 'Error!'
   });
+
+  $http({method: 'GET', url: '/api/total'}).
+    success(function(data, status, headers, config) {
+     $scope.total = JSON.stringify(data);
+    }).
+    error(function(data, status, headers, config) {
+      $scope.total = 'Error!'
+    });
+
 /*
   socket.on('send:name', function (data) {
     $scope.name = data.name;
@@ -23,7 +32,6 @@ function MyCtrl1($scope, socket) {
   });
 }
 MyCtrl1.$inject = ['$scope', 'socket'];
-
 
 function MyCtrl2() {
 }
@@ -42,3 +50,7 @@ function DashboardCtrl($scope, socket) {
     });
 }
 DashboardCtrl.$inject = ['$scope', 'socket'];
+
+function TotalCtrl($scope) {
+}
+TotalCtrl.$inject = ['$scope'];

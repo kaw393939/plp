@@ -176,9 +176,7 @@ var persistentAnalyticsSingleton = (function () {
             function updateMinute(time, callback) {
                 trAnl.getPagesMinute(time.format('YYYYMMDDHHmm'), function (err, pages) {
                     if (!err) {
-                        console.log(pages);
                         TotalMinute.findOne({ site: trAnl.site, time: time.format('YYYYMMDDHHmm') }, function (err, totalMinute) {
-                            console.log(err, totalMinute); 
                             for (page in pages) {
                                 var pageobj = _.findWhere(totalMinute.pages, { page: page });
                                 if (pageobj) { // existing page: update hits

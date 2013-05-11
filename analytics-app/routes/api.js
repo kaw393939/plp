@@ -7,3 +7,7 @@ exports.name = function (req, res) {
   	name: 'Bob'
   });
 };
+
+exports.total = function (req, res) {
+    res.json({ text: 'Hello' });
+};

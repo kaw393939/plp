@@ -7,6 +7,7 @@ var app = angular.module('analyticsApp', ['analyticsApp.filters', 'analyticsApp.
     $routeProvider.when('/view1', {templateUrl: 'partials/partial1', controller: MyCtrl1});
     $routeProvider.when('/view2', {templateUrl: 'partials/partial2', controller: MyCtrl2});
     $routeProvider.when('/dashboard', {templateUrl: 'partials/dashboard', controller: DashboardCtrl});
+    $routeProvider.when('/total', {templateUrl: 'partials/total', controller: TotalCtrl});
     $routeProvider.otherwise({redirectTo: '/view1'});
     $locationProvider.html5Mode(true);
   }]);
