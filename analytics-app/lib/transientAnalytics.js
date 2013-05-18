@@ -38,6 +38,7 @@ var transientAnalyticsSingleton = (function () {
             os = req.useragent.OS,
             platform = req.useragent.Platform,
             version = req.useragent.Version,
+            userid = 'anonymous',
             time = moment().format('YYYYMMDDHHmmss');
 
         browser = _s.classify(browser);
@@ -51,6 +52,7 @@ var transientAnalyticsSingleton = (function () {
         client.sadd('anl:platform', platform);
         client.sadd('anl:version', version);
         client.sadd('anl:ip', ip);
+        client.sadd('anl:userid', userid);
 
         // total
         client.incr('anl:' + site);
@@ -68,11 +70,27 @@ var transientAnalyticsSingleton = (function () {
         client.incr('anl:' + site + ':browser:' + browser);
         client.incr('anl:' + site + ':browser:' + browser + ':time:' + time);
 
+        // os
         client.incr('anl:' + site + ':os:' + os);
+        client.incr('anl:' + site + ':os:' + os + ':time:' + time);
+
+        // platform
         client.incr('anl:' + site + ':platform:' + platform);
+        client.incr('anl:' + site + ':platform:' + platform + ':time:' + time);
+
+        // version
         client.incr('anl:' + site + ':version:' + version);
+
+        //userid
+        client.incr('anl:' + site + ':userid:' + userid);
+        client.incr('anl:' + site + ':userid:' + userid + ':time:' + time);
+
+        // ip
         client.incr('anl:' + site + ':ip:' + ip);
+        client.incr('anl:' + site + ':ip:' + ip + ':time:' + time);
         client.incr('anl:' + site + ':' + page + ':ip:' + ip);
+        client.incr('anl:' + site + ':' + page + ':ip:' + ip + ':time:' + time);
+        client.incr('anl:' + site + ':' + page + ':ip:' + ip + ':userid:' + userid + ':time:' + time);
 
         next();
       },
@@ -181,29 +199,40 @@ return total';
         });
       },
 
-      getBrowserMinute: function (minute, callback) {
-        var script = '\
-local browsers = redis.call("smembers", KEYS[1]) \
-for i=1,# browsers do \
-    local keys = redis.call("keys", "anl:" .. ARGV[1] .. ":browser:" .. browsers[i] .. ":time:" .. ARGV[2] .. "*") \
-    local total = 0 \
-    for j=1,# keys do \
-        local hits = tonumber(redis.call("get", keys[j])) \
-        total = total + hits \
-    end \
-    table.insert(browsers, total) \
-end \
-return browsers';
-        client.eval(script, 1, 'anl:browser', instance.site, minute, function (err, browsers) {
-          var len = browsers.length;
-          var browser = {};
+      getDataMinute: function (dataType, minute, callback) {
+        var script = 'local items = redis.call("smembers", KEYS[1])\n' +
+              'for i=1,# items do\n' +
+              '  local keys = redis.call("keys", "anl:" .. ARGV[2] .. ":" .. ARGV[1] .. ":" .. items[i] .. ":time:" .. ARGV[3] .. "*")\n' +
+              '  local total = 0\n' +
+              '  for j=1,# keys do\n' +
+              '    local hits = tonumber(redis.call("get", keys[j]))\n' +
+              '    total = total + hits\n' +
+              '  end\n' +
+              '  table.insert(items, total)\n' +
+              'end\n' +
+              'return items';
+        client.eval(script, 1, 'anl:' + dataType, dataType, instance.site, minute, function (err, items) {
+          var len = items.length;
+          var item = {};
           for (var i=0; i<len/2; i+=1) {
-            browser[browsers[i]] = browsers[i+len/2];
+            item[items[i]] = items[i+len/2];
           }
           if (callback !== undefined) {
-            callback(err, browser);
+            callback(err, item);
           }
         });
+      },
+
+      getBrowserMinute: function (minute, callback) {
+        instance.getDataMinute('browser', minute, callback);
+      },
+
+      getOperatingSystemMinute: function (minute, callback) {
+        instance.getDataMinute('os', minute, callback);
+      },
+
+      getPlatformMinute: function (minute, callback) {
+        instance.getDataMinute('platform', minute, callback);
       },
 
       getPagesMinute: function (minute, callback) {

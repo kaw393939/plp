@@ -14,6 +14,9 @@ var totalSchema = mongoose.Schema({
   platform: {
     Linux: Number
   },
+  userid: {
+    anonymous: Number
+  },
   ipAddresses: [{
     ip: String,
     hits: Number

@@ -167,37 +167,42 @@ var persistentAnalyticsSingleton = (function () {
       });
     }
 
-    function syncBrowserMinute(callback) {
+    function syncDataMinute(dataType, callback) {
       var lastMinute = moment().subtract(1, 'minutes'),
           now = moment();
 
       function updateMinute(time, callback) {
-        trAnl.getBrowserMinute(time.format('YYYYMMDDHHmm'), function (err, browser) {
+        trAnl.getDataMinute(dataType, time.format('YYYYMMDDHHmm'), function (err, items) {
           if (!err) {
-            // Detect new browser type and add it to the schema
-            for (var bt in browser) {
-              if (TotalMinute.schema.path('browser.' + bt) === undefined) {
-                var newschema = { browser: {} };
-                newschema.browser[bt] = 'number';
+            // Detect new item type and add it to the schema
+            for (var item in items) {
+              if (TotalMinute.schema.path(dataType + '.' + item) === undefined) {
+                var newschema = {};
+                newschema[dataType] = {};
+                newschema[dataType][item] = 'number';
                 TotalMinute.schema.add(newschema);
               }
             }
 
+            var dataDefinition = {
+              timestamp: moment().toDate(),
+              year: time.year(),
+              month: time.month(),
+              date: time.date(),
+              hour: time.hour(),
+              minute: time.minute()
+            };
+            dataDefinition[dataType] = items;
+
             TotalMinute.update(
               { site: trAnl.site, time: time.format('YYYYMMDDHHmm'), jsdate: time.startOf('minute').toDate() },
-              { timestamp: moment().toDate(),
-                year: time.year(),
-                month: time.month(),
-                date: time.date(),
-                hour: time.hour(),
-                minute: time.minute(),
-                browser: browser },
+              dataDefinition,
               { upsert: true },
               callback
             );
           } else {
             console.log(err);
-            callback(err, browser);
+            callback(err, items);
           }
         });
       }
@@ -214,6 +219,18 @@ var persistentAnalyticsSingleton = (function () {
       });
     }
 
+    function syncBrowserMinute(callback) {
+      syncDataMinute('browser', callback);
+    }
+
+    function syncOperatingSystemMinute(callback) {
+      syncDataMinute('os', callback);
+    }
+
+    function syncPlatformMinute(callback) {
+      syncDataMinute('platform', callback);
+    }
+
     function syncPagesMinute(callback) {
       var lastMinute = moment().subtract(1, 'minutes'),
           now = moment();
@@ -222,7 +239,7 @@ var persistentAnalyticsSingleton = (function () {
         trAnl.getPagesMinute(time.format('YYYYMMDDHHmm'), function (err, pages) {
           if (!err && pages !== null) {
             TotalMinute.findOne({ site: trAnl.site, time: time.format('YYYYMMDDHHmm') }, function (err, totalMinute) {
-              if (!err) {
+              if (!err && totalMinute !== null) {
                 for (var page in pages) {
                   var pageobj = _.findWhere(totalMinute.pages, { page: page });
                   if (pageobj) { // existing page: update hits
@@ -234,6 +251,51 @@ var persistentAnalyticsSingleton = (function () {
                   }
                 }
                 totalMinute.save(callback);
+              } else {
+                console.log('didn\'t get totalMinute');
+              }
+            });
+          } else {
+            console.log(err);
+            callback(err, pages);
+          }
+        });
+      }
+
+      updateMinute(now, function (err, data) {
+        // make sure last minute data is complete
+        if (now.second() <= 10) {
+          updateMinute(lastMinute, function (err2, data2) {
+            callback(err, data);
+          });
+        } else {
+          callback(err, data);
+        }
+      });
+    }
+
+    function syncIPAddressMinute(callback) {
+      var lastMinute = moment().subtract(1, 'minutes'),
+          now = moment();
+
+      function updateMinute(time, callback) {
+        trAnl.getPagesMinute(time.format('YYYYMMDDHHmm'), function (err, pages) {
+          if (!err && pages !== null) {
+            TotalMinute.findOne({ site: trAnl.site, time: time.format('YYYYMMDDHHmm') }, function (err, totalMinute) {
+              if (!err && totalMinute !== null) {
+                for (var page in pages) {
+                  var pageobj = _.findWhere(totalMinute.pages, { page: page });
+                  if (pageobj) { // existing page: update hits
+                    var idx = totalMinute.pages.indexOf(pageobj);
+                    pageobj.hits = pages[page];
+                    totalMinute.pages.set(idx, pageobj);
+                  } else { // new page
+                    totalMinute.pages.push({ page: page, hits: pages[page] });
+                  }
+                }
+                totalMinute.save(callback);
+              } else {
+                console.log('didn\'t get totalMinute');
               }
             });
           } else {
@@ -256,18 +318,25 @@ var persistentAnalyticsSingleton = (function () {
     }
 
     function store(callback) {
-      var tasks = [
+      var main_tasks = [
         syncTotal,
+        syncTotalMinute
+      ],
+      tasks = [
         syncBrowser,
         syncOperatingSystem,
         syncPlatform,
         syncIPAddresses,
         syncPage,
-        syncTotalMinute,
         syncBrowserMinute,
+        syncOperatingSystemMinute,
+        syncPlatformMinute,
         syncPagesMinute
       ];
-      async.parallel(tasks, callback);
+      async.parallel(main_tasks, function (err, data) {
+        async.parallel(tasks, callback);
+      });
+
     }
 
     return {
