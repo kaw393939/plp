@@ -18,7 +18,7 @@ module.exports = {
     redisHost: null,
     redisPort: null,
     root: rootPath,
-    site: 'invention.org',
+    site: 'localhost',
     app: {
       name: 'Analytics Application (Test)'
     },

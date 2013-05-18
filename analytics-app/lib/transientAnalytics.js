@@ -95,7 +95,6 @@ var transientAnalyticsSingleton = (function () {
         next();
       },
 
-
       getTime: function () {
         return moment().format('YYYYMMDDHHmmss');
       },
@@ -110,12 +109,12 @@ var transientAnalyticsSingleton = (function () {
       getTotal: function (callback) {
         client.get('anl:' + instance.site, function (err, total) {
           if (callback !== undefined) {
-            callback(err, total);
+            callback(err, parseInt(total, 10));
           }
         });
       },
 
-      // dataType: ['browser', 'platform', 'os', 'ip', 'version']
+      // dataType: ['browser', 'platform', 'os', 'ip', 'version', 'userid']
       getData: function (dataType, callback) {
         var script =
               'local items = redis.call("smembers", KEYS[1])\n' +
@@ -127,6 +126,10 @@ var transientAnalyticsSingleton = (function () {
         client.eval(script, 1, 'anl:' + dataType, instance.site, function (err, items) {
           var len = items.length;
           var item = {};
+          if (len == 0) {
+            callback(new Error('Unrecognized data type'), null);
+            return;
+          }
           for (var i=0; i<len/2; i+=1) {
             item[items[i]] = (items[i+len/2] == "Unknown") ? 0 : items[i+len/2];
           }
@@ -214,6 +217,10 @@ return total';
         client.eval(script, 1, 'anl:' + dataType, dataType, instance.site, minute, function (err, items) {
           var len = items.length;
           var item = {};
+          if (len == 0) {
+            callback(new Error('Unrecognized data type'));
+            return;
+          }
           for (var i=0; i<len/2; i+=1) {
             item[items[i]] = items[i+len/2];
           }
