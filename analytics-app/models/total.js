@@ -8,6 +8,16 @@ var totalSchema = mongoose.Schema({
     Firefox: Number,
     Chrome: Number
   },
+  os: {
+    Linux: Number
+  },
+  platform: {
+    Linux: Number
+  },
+  ipAddresses: [{
+    ip: String,
+    hits: Number
+  }],
   pages: [{
     page: String,
     hits: Number

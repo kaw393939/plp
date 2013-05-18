@@ -28,30 +28,75 @@ var persistentAnalyticsSingleton = (function () {
       });
     }
 
-    function syncBrowser(callback) {
-      trAnl.getBrowsers(function (err, browser) {
-        if (!err) {
+    function syncData(dataType, callback) {
 
-          // Detect new browser type and add it to the schema
-          for (var bt in browser) {
-            if (Total.schema.path('browser.' + bt) === undefined) {
-              var newschema = { browser: {} };
-              newschema.browser[bt] = 'number';
+      trAnl.getData(dataType, function (err, data) {
+        if (!err) {
+          // Detect new data type and add it to the schema
+          for (var datum in data) {
+            if (Total.schema.path(dataType + '.' + datum) === undefined) {
+              var newschema = {};
+              newschema[dataType] = {};
+              newschema[dataType][datum] = 'number';
               Total.schema.add(newschema);
             }
           }
 
+          var dataDefinition = { timestamp: moment().toDate() };
+          dataDefinition[dataType] = data;
+
           Total.update(
             { site: trAnl.site },
-            { timestamp: moment().toDate(),
-              browser: browser },
+            dataDefinition,
             { upsert: true },
             callback
           );
 
         } else {
           if (callback !== undefined) {
-            callback(err, browser);
+            callback(err, data);
+          }
+        }
+      });
+    }
+
+    function syncBrowser(callback) {
+      syncData('browser', callback);
+    }
+
+    function syncVersion(callback) {
+      syncData('version', callback);
+    }
+
+    function syncOperatingSystem(callback) {
+      syncData('os', callback);
+    }
+
+    function syncPlatform(callback) {
+      syncData('platform', callback);
+    }
+
+    function syncIPAddresses(callback) {
+      trAnl.getData('ip', function (err, ipAddresses) {
+        if (!err) {
+          // Find records
+          Total.findOne({ site: trAnl.site }, function (err, total) {
+            for (var ip in ipAddresses) {
+              var ipobj = _.findWhere(total.ipAddresses, { ip: ip });
+              if (ipobj) { // existing ip address: update hits
+                var idx = total.ipAddresses.indexOf(ipobj);
+                ipobj.hits = ipAddresses[ip];
+                total.ipAddresses.set(idx, ipobj);
+              } else { // new ip address
+                total.ipAddresses.push({ ip: ip, hits: ipAddresses[ip] });
+              }
+            }
+            total.save(callback);
+          });
+
+        } else {
+          if (callback !== undefined) {
+            callback(err, ipAddresses);
           }
         }
       });
@@ -175,19 +220,21 @@ var persistentAnalyticsSingleton = (function () {
 
       function updateMinute(time, callback) {
         trAnl.getPagesMinute(time.format('YYYYMMDDHHmm'), function (err, pages) {
-          if (!err) {
+          if (!err && pages !== null) {
             TotalMinute.findOne({ site: trAnl.site, time: time.format('YYYYMMDDHHmm') }, function (err, totalMinute) {
-              for (var page in pages) {
-                var pageobj = _.findWhere(totalMinute.pages, { page: page });
-                if (pageobj) { // existing page: update hits
-                  var idx = totalMinute.pages.indexOf(pageobj);
-                  pageobj.hits = pages[page];
-                  totalMinute.pages.set(idx, pageobj);
-                } else { // new page
-                  totalMinute.pages.push({ page: page, hits: pages[page] });
+              if (!err) {
+                for (var page in pages) {
+                  var pageobj = _.findWhere(totalMinute.pages, { page: page });
+                  if (pageobj) { // existing page: update hits
+                    var idx = totalMinute.pages.indexOf(pageobj);
+                    pageobj.hits = pages[page];
+                    totalMinute.pages.set(idx, pageobj);
+                  } else { // new page
+                    totalMinute.pages.push({ page: page, hits: pages[page] });
+                  }
                 }
+                totalMinute.save(callback);
               }
-              totalMinute.save(callback);
             });
           } else {
             console.log(err);
@@ -212,6 +259,9 @@ var persistentAnalyticsSingleton = (function () {
       var tasks = [
         syncTotal,
         syncBrowser,
+        syncOperatingSystem,
+        syncPlatform,
+        syncIPAddresses,
         syncPage,
         syncTotalMinute,
         syncBrowserMinute,

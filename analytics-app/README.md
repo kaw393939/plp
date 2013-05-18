@@ -1,4 +1,4 @@
-# Analytics in Angular - Express - MongoDB Application 
+# Analytics in Angular - Express - MongoDB Application
 
 This application showcase the Analytics module works in an Angular - Express - MongoDB - based
 application. This application used the [Angular Socket.io Seed](https://github.com/btford/angular-socket-io-seed)
@@ -8,18 +8,24 @@ as the basis for original template.
 
 Runs like a typical express app:
 
-    node app.js
+    $ node app.js
 
 ## Running tests
 
 Coming soon!
 
+Code style guide: use jshint
+
+```sh
+$ jshint [filename.js]
+```
+
 ## Directory Layout
-    
+
     app.js              --> app config
     package.json        --> for npm
     lib/                --> libraries
-      transientAnalytics.js     --> short-term transient analytics data in Redis 
+      transientAnalytics.js     --> short-term transient analytics data in Redis
       persistentAnaltics.js     --> long-term time-series analytics data in MongoDB
     models/             --> Mongoose models
       total.js          --> Total analytics object
@@ -52,6 +58,3 @@ Coming soon!
         partial2.jade
         total.jade
         dashboard.jade
-
-
-

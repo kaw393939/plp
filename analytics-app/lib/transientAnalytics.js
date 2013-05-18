@@ -68,9 +68,10 @@ var transientAnalyticsSingleton = (function () {
         client.incr('anl:' + site + ':browser:' + browser);
         client.incr('anl:' + site + ':browser:' + browser + ':time:' + time);
 
-        client.incr('anl:os:' + os);
-        client.incr('anl:platform:' + platform);
-        client.incr('anl:version:' + version);
+        client.incr('anl:' + site + ':os:' + os);
+        client.incr('anl:' + site + ':platform:' + platform);
+        client.incr('anl:' + site + ':version:' + version);
+        client.incr('anl:' + site + ':ip:' + ip);
         client.incr('anl:' + site + ':' + page + ':ip:' + ip);
 
         next();
@@ -96,24 +97,45 @@ var transientAnalyticsSingleton = (function () {
         });
       },
 
-      getBrowsers: function (callback) {
-        var script = '\
-local browsers = redis.call("smembers", KEYS[1]) \
-for i=1,# browsers do \
-    local hits = tonumber(redis.call("get", "anl:" .. ARGV[1] .. ":browser:" .. browsers[i])) \
-    table.insert(browsers, hits) \
-end \
-return browsers';
-        client.eval(script, 1, 'anl:browser', instance.site, function (err, browsers) {
-          var len = browsers.length;
-          var browser = {};
+      // dataType: ['browser', 'platform', 'os', 'ip', 'version']
+      getData: function (dataType, callback) {
+        var script =
+              'local items = redis.call("smembers", KEYS[1])\n' +
+              'for i=1,# items do\n' +
+              '  local hits = tonumber(redis.call("get", "anl:" .. ARGV[1] .. ":' + dataType + ':" .. items[i]))\n' +
+              '  table.insert(items, hits)\n' +
+              'end\n' +
+              'return items';
+        client.eval(script, 1, 'anl:' + dataType, instance.site, function (err, items) {
+          var len = items.length;
+          var item = {};
           for (var i=0; i<len/2; i+=1) {
-            browser[browsers[i]] = browsers[i+len/2];
+            item[items[i]] = (items[i+len/2] == "Unknown") ? 0 : items[i+len/2];
           }
           if (callback !== undefined) {
-            callback(err, browser);
+            callback(err, item);
           }
         });
+      },
+
+      getBrowsers: function (callback) {
+        instance.getData('browser', callback);
+      },
+
+      getVersions: function (callback) {
+        instance.getData('version', callback);
+      },
+
+      getOperatingSystems: function (callback) {
+        instance.getData('os', callback);
+      },
+
+      getPlatforms: function (callback) {
+        instance.getData('platform', callback);
+      },
+
+      getIPs: function (callback) {
+        instance.getData('ip', callback);
       },
 
       getPages: function (callback) {
