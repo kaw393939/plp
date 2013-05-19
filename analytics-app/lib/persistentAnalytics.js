@@ -344,6 +344,10 @@ var persistentAnalyticsSingleton = (function () {
         intervalId = setInterval(store, syncTime);
       },
 
+      stopTimer: function () {
+        clearInterval(intervalId);
+      },
+
       minutely: function (start, end, callback) {
         start = (typeof start === "undefined") ? start : moment.unix(0).toDate();
         end = (typeof end === "undefined") ? end : moment().toDate();

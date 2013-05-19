@@ -126,7 +126,7 @@ var transientAnalyticsSingleton = (function () {
         client.eval(script, 1, 'anl:' + dataType, instance.site, function (err, items) {
           var len = items.length;
           var item = {};
-          if (len == 0) {
+          if (len === 0) {
             callback(new Error('Unrecognized data type'), null);
             return;
           }
@@ -217,7 +217,7 @@ return total';
         client.eval(script, 1, 'anl:' + dataType, dataType, instance.site, minute, function (err, items) {
           var len = items.length;
           var item = {};
-          if (len == 0) {
+          if (len === 0) {
             callback(new Error('Unrecognized data type'));
             return;
           }

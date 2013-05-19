@@ -12,7 +12,17 @@ Runs like a typical express app:
 
 ## Running tests
 
-Coming soon!
+We use `mocha` as testing framework, with `should` as the assertion library and `supertest` to test the web server.
+
+```sh
+$ mocha --reporter spec
+```
+
+Or
+
+```sh
+$ npm test
+```
 
 Code style guide: use jshint
 
@@ -50,6 +60,7 @@ $ jshint [filename.js]
       index.js          --> route for serving HTML pages and partials
       api.js            --> route for serving API
       socket.js         --> route for socket.io connections
+    test/               --> test scripts
     views/
       index.jade        --> main page for app
       layout.jade       --> doctype, title, head boilerplate
